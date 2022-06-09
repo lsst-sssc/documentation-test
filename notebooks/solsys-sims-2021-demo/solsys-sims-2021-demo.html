@@ -1,0 +1,1259 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>LSST Solar System Simulations, June 2021 &#8212; LSST SSSC Technical Documentation  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Plot a comet lightcurve from sssource" href="../sssource-plot-a-comet-lightcurve/sssource-plot-a-comet-lightcurve.html" />
+    <link rel="prev" title="Welcome to LSST SSSC Technical Documentation!" href="../../index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="lsst-solar-system-simulations-june-2021">
+<h1>LSST Solar System Simulations, June 2021<a class="headerlink" href="#lsst-solar-system-simulations-june-2021" title="Permalink to this heading">¶</a></h1>
+<p>Juric, Eggl, Jones, Fedorets, Cornwall, Berres, Chernyavskaya, Moeyens,
+Schwamb, et many many al.</p>
+<p>This notebook illustrates what is available in the June 2021 version of
+the simulated LSST Solar System dataset. Use it as a starting point for
+your own experiments.</p>
+<section id="getting-this-notebook">
+<h2>Getting this notebook<a class="headerlink" href="#getting-this-notebook" title="Permalink to this heading">¶</a></h2>
+<p>This notebook is available from
+<a class="reference external" href="https://github.com/lsst-sssc/lsst-simulation">https://github.com/lsst-sssc/lsst-simulation</a>. Open a terminal and clone
+it into your home directory to run it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">lsst</span><span class="o">-</span><span class="n">sssc</span><span class="o">/</span><span class="n">lsst</span><span class="o">-</span><span class="n">simulation</span>
+</pre></div>
+</div>
+</section>
+<section id="connecting-and-inspecting-available-tables">
+<h2>Connecting and inspecting available tables<a class="headerlink" href="#connecting-and-inspecting-available-tables" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">psycopg2</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pwd</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/home/shared/sssc-db-pass.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="s2">&quot;lsst_solsys&quot;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;sssc&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">pwd</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;epyc.astro.washington.edu&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="s2">&quot;5432&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See which tables are available:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tables</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT table_name FROM information_schema.tables WHERE table_schema = &#39;public&#39;&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+<span class="n">tables</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;table_name&quot;</span><span class="p">)</span>
+<span class="n">tables</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+    </tr>
+    <tr>
+      <th>table_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>ssobjects</th>
+    </tr>
+    <tr>
+      <th>sssources</th>
+    </tr>
+    <tr>
+      <th>mpcorb</th>
+    </tr>
+    <tr>
+      <th>diasources</th>
+    </tr>
+  </tbody>
+</table>
+</div><p>See how many rows does each table have (this may take a minute or two).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">tables</span><span class="p">[</span><span class="s2">&quot;nrows&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT COUNT(*) FROM </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">))</span>
+    <span class="n">tables</span><span class="p">[</span><span class="s2">&quot;nrows&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">table</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mf">11.1</span> <span class="n">ms</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mf">1.17</span> <span class="n">ms</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mf">12.3</span> <span class="n">ms</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1</span><span class="nb">min</span> <span class="mi">11</span><span class="n">s</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tables</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>nrows</th>
+    </tr>
+    <tr>
+      <th>table_name</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>ssobjects</th>
+      <td>10556741</td>
+    </tr>
+    <tr>
+      <th>sssources</th>
+      <td>1043415800</td>
+    </tr>
+    <tr>
+      <th>mpcorb</th>
+      <td>14600302</td>
+    </tr>
+    <tr>
+      <th>diasources</th>
+      <td>1043415800</td>
+    </tr>
+  </tbody>
+</table>
+</div><p>Let’s get a feel for the available data, by grabbing the top 5 rows of
+each table:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM diasources LIMIT 5&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>diasourceid</th>
+      <th>ccdvisitid</th>
+      <th>diaobjectid</th>
+      <th>ssobjectid</th>
+      <th>_name</th>
+      <th>ssobjectreassoctime</th>
+      <th>midpointtai</th>
+      <th>ra</th>
+      <th>rasigma</th>
+      <th>decl</th>
+      <th>declsigma</th>
+      <th>ra_decl_cov</th>
+      <th>snr</th>
+      <th>filter</th>
+      <th>mag</th>
+      <th>magsigma</th>
+      <th>_v</th>
+      <th>_magtrue</th>
+      <th>_ratrue</th>
+      <th>_dectrue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1952839109036039781</td>
+      <td>122231</td>
+      <td>1537215218520783399</td>
+      <td>819889643154482779</td>
+      <td>S1005CYCa</td>
+      <td>60039.037419</td>
+      <td>60039.037419</td>
+      <td>129.590684</td>
+      <td>0.000009</td>
+      <td>12.003733</td>
+      <td>0.000009</td>
+      <td>0.0</td>
+      <td>16.698526</td>
+      <td>i</td>
+      <td>21.043230</td>
+      <td>0.063147</td>
+      <td>21.521744</td>
+      <td>21.066744</td>
+      <td>129.590684</td>
+      <td>12.003725</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1486543917817498729</td>
+      <td>123098</td>
+      <td>-7037468574229910592</td>
+      <td>5786782821283451137</td>
+      <td>S1005D4qa</td>
+      <td>60040.005246</td>
+      <td>60040.005246</td>
+      <td>124.049298</td>
+      <td>0.000010</td>
+      <td>-5.136787</td>
+      <td>0.000010</td>
+      <td>0.0</td>
+      <td>13.551331</td>
+      <td>i</td>
+      <td>21.699242</td>
+      <td>0.077302</td>
+      <td>22.062727</td>
+      <td>21.607727</td>
+      <td>124.049304</td>
+      <td>-5.136777</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>8744810120905494086</td>
+      <td>124777</td>
+      <td>8686809464008266824</td>
+      <td>-9093662608188820544</td>
+      <td>S1005D66a</td>
+      <td>60041.348960</td>
+      <td>60041.348960</td>
+      <td>283.045411</td>
+      <td>0.000008</td>
+      <td>-33.137396</td>
+      <td>0.000008</td>
+      <td>0.0</td>
+      <td>11.022760</td>
+      <td>y</td>
+      <td>21.476673</td>
+      <td>0.094285</td>
+      <td>21.766966</td>
+      <td>21.463966</td>
+      <td>283.045401</td>
+      <td>-33.137406</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3452285572810631019</td>
+      <td>124834</td>
+      <td>-1859933907867084349</td>
+      <td>-9093662608188820544</td>
+      <td>S1005D66a</td>
+      <td>60041.375001</td>
+      <td>60041.375001</td>
+      <td>283.050372</td>
+      <td>0.000008</td>
+      <td>-33.138294</td>
+      <td>0.000008</td>
+      <td>0.0</td>
+      <td>11.308365</td>
+      <td>y</td>
+      <td>21.415295</td>
+      <td>0.092001</td>
+      <td>21.766676</td>
+      <td>21.463676</td>
+      <td>283.050357</td>
+      <td>-33.138322</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-1529909586803787453</td>
+      <td>124861</td>
+      <td>3661636550541166030</td>
+      <td>-9093662608188820544</td>
+      <td>S1005D66a</td>
+      <td>60041.387444</td>
+      <td>60041.387444</td>
+      <td>283.052716</td>
+      <td>0.000007</td>
+      <td>-33.138754</td>
+      <td>0.000007</td>
+      <td>0.0</td>
+      <td>12.064641</td>
+      <td>y</td>
+      <td>21.430834</td>
+      <td>0.086458</td>
+      <td>21.766537</td>
+      <td>21.463537</td>
+      <td>283.052719</td>
+      <td>-33.138756</td>
+    </tr>
+  </tbody>
+</table>
+</div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM sssources LIMIT 5&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ssobjectid</th>
+      <th>diasourceid</th>
+      <th>mpcuniqueid</th>
+      <th>eclipticlambda</th>
+      <th>eclipticbeta</th>
+      <th>galacticl</th>
+      <th>galacticb</th>
+      <th>phaseangle</th>
+      <th>heliocentricdist</th>
+      <th>topocentricdist</th>
+      <th>...</th>
+      <th>heliocentricz</th>
+      <th>heliocentricvx</th>
+      <th>heliocentricvy</th>
+      <th>heliocentricvz</th>
+      <th>topocentricx</th>
+      <th>topocentricy</th>
+      <th>topocentricz</th>
+      <th>topocentricvx</th>
+      <th>topocentricvy</th>
+      <th>topocentricvz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>819889643154482779</td>
+      <td>1952839109036039781</td>
+      <td>0</td>
+      <td>128.836575</td>
+      <td>-6.258677</td>
+      <td>213.949948</td>
+      <td>29.104339</td>
+      <td>18.748798</td>
+      <td>2.842328</td>
+      <td>2.284481</td>
+      <td>...</td>
+      <td>0.374356</td>
+      <td>-0.004101</td>
+      <td>-0.008415</td>
+      <td>-0.000889</td>
+      <td>-1.424062</td>
+      <td>1.721966</td>
+      <td>0.475116</td>
+      <td>-0.008015</td>
+      <td>0.007075</td>
+      <td>0.005753</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5786782821283451137</td>
+      <td>1486543917817498729</td>
+      <td>0</td>
+      <td>127.700247</td>
+      <td>-24.230133</td>
+      <td>227.644419</td>
+      <td>16.234911</td>
+      <td>17.612328</td>
+      <td>3.106055</td>
+      <td>2.617551</td>
+      <td>...</td>
+      <td>-0.341533</td>
+      <td>-0.004793</td>
+      <td>-0.007634</td>
+      <td>-0.003896</td>
+      <td>-1.459697</td>
+      <td>2.160078</td>
+      <td>-0.234359</td>
+      <td>-0.008954</td>
+      <td>0.007755</td>
+      <td>0.002716</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-9093662608188820544</td>
+      <td>8744810120905494086</td>
+      <td>0</td>
+      <td>281.072220</td>
+      <td>-10.198162</td>
+      <td>2.838461</td>
+      <td>-14.577027</td>
+      <td>19.033407</td>
+      <td>3.053244</td>
+      <td>2.785494</td>
+      <td>...</td>
+      <td>-1.638718</td>
+      <td>0.009758</td>
+      <td>-0.001617</td>
+      <td>-0.000669</td>
+      <td>0.526492</td>
+      <td>-2.272270</td>
+      <td>-1.522687</td>
+      <td>0.004808</td>
+      <td>0.013617</td>
+      <td>0.005900</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-9093662608188820544</td>
+      <td>3452285572810631019</td>
+      <td>0</td>
+      <td>281.076340</td>
+      <td>-10.199436</td>
+      <td>2.839294</td>
+      <td>-14.581200</td>
+      <td>19.032654</td>
+      <td>3.053253</td>
+      <td>2.785145</td>
+      <td>...</td>
+      <td>-1.638735</td>
+      <td>0.009758</td>
+      <td>-0.001616</td>
+      <td>-0.000669</td>
+      <td>0.526617</td>
+      <td>-2.271916</td>
+      <td>-1.522533</td>
+      <td>0.004791</td>
+      <td>0.013579</td>
+      <td>0.005900</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-9093662608188820544</td>
+      <td>-1529909586803787453</td>
+      <td>0</td>
+      <td>281.078284</td>
+      <td>-10.200073</td>
+      <td>2.839653</td>
+      <td>-14.583186</td>
+      <td>19.032290</td>
+      <td>3.053257</td>
+      <td>2.784979</td>
+      <td>...</td>
+      <td>-1.638743</td>
+      <td>0.009758</td>
+      <td>-0.001616</td>
+      <td>-0.000669</td>
+      <td>0.526676</td>
+      <td>-2.271747</td>
+      <td>-1.522460</td>
+      <td>0.004785</td>
+      <td>0.013561</td>
+      <td>0.005899</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 29 columns</p>
+</div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM ssobjects LIMIT 5&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ssobjectid</th>
+      <th>discoverysubmissiondate</th>
+      <th>firstobservationdate</th>
+      <th>arc</th>
+      <th>numobs</th>
+      <th>moid</th>
+      <th>moidtrueanomaly</th>
+      <th>moideclipticlongitude</th>
+      <th>moiddeltav</th>
+      <th>uh</th>
+      <th>...</th>
+      <th>yg12</th>
+      <th>yherr</th>
+      <th>yg12err</th>
+      <th>yh_yg12_cov</th>
+      <th>ychi2</th>
+      <th>yndata</th>
+      <th>maxextendedness</th>
+      <th>minextendedness</th>
+      <th>medianextendedness</th>
+      <th>flags</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>668135024989</td>
+      <td>60797.136495</td>
+      <td>60790.136495</td>
+      <td>0.000000</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>3033569589766</td>
+      <td>63480.233685</td>
+      <td>63473.233685</td>
+      <td>1.975244</td>
+      <td>3</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3148445770109</td>
+      <td>59937.159828</td>
+      <td>59930.159828</td>
+      <td>2693.060000</td>
+      <td>3</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3369984299447</td>
+      <td>60203.374981</td>
+      <td>60196.374981</td>
+      <td>2582.777000</td>
+      <td>107</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>...</td>
+      <td>0.345189</td>
+      <td>0.087608</td>
+      <td>0.133565</td>
+      <td>0.010005</td>
+      <td>0.571543</td>
+      <td>7</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3643818542061</td>
+      <td>59917.313961</td>
+      <td>59910.313961</td>
+      <td>46.793457</td>
+      <td>10</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 55 columns</p>
+</div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM mpcorb LIMIT 5&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mpcdesignation</th>
+      <th>mpcnumber</th>
+      <th>ssobjectid</th>
+      <th>mpch</th>
+      <th>mpcg</th>
+      <th>epoch</th>
+      <th>tperi</th>
+      <th>peri</th>
+      <th>node</th>
+      <th>incl</th>
+      <th>...</th>
+      <th>arc</th>
+      <th>arcstart</th>
+      <th>arcend</th>
+      <th>rms</th>
+      <th>pertsshort</th>
+      <th>pertslong</th>
+      <th>computer</th>
+      <th>flags</th>
+      <th>fulldesignation</th>
+      <th>lastincludedobservation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SR000001a</td>
+      <td>0</td>
+      <td>-2658575675934308610</td>
+      <td>7.95</td>
+      <td>0.15</td>
+      <td>54800.0</td>
+      <td>52354.06796</td>
+      <td>47.02487</td>
+      <td>66.70177</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>None</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>SR000002a</td>
+      <td>0</td>
+      <td>1638696702905544284</td>
+      <td>11.90</td>
+      <td>0.15</td>
+      <td>54800.0</td>
+      <td>54255.95952</td>
+      <td>111.14332</td>
+      <td>149.76906</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>None</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>SR000003a</td>
+      <td>0</td>
+      <td>-6148727610239885338</td>
+      <td>7.58</td>
+      <td>0.15</td>
+      <td>54800.0</td>
+      <td>32718.27775</td>
+      <td>86.93460</td>
+      <td>157.72377</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>None</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>SR000004a</td>
+      <td>0</td>
+      <td>2476339031007217136</td>
+      <td>12.99</td>
+      <td>0.15</td>
+      <td>54800.0</td>
+      <td>49162.23730</td>
+      <td>357.05184</td>
+      <td>318.01916</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>None</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>SR000006a</td>
+      <td>0</td>
+      <td>-6439077407999146266</td>
+      <td>9.28</td>
+      <td>0.15</td>
+      <td>54800.0</td>
+      <td>-13278.77515</td>
+      <td>302.03901</td>
+      <td>292.49508</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>None</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 27 columns</p>
+</div><section id="plot-a-visit">
+<h3>Plot a visit<a class="headerlink" href="#plot-a-visit" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT</span>
+<span class="s2">        ssObjectId, ra, decl, ccdVisitId, midPointTai</span>
+<span class="s2">    FROM</span>
+<span class="s2">        diaSources</span>
+<span class="s2">    WHERE</span>
+<span class="s2">        ccdVisitId = 126272</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mf">5.96</span> <span class="n">ms</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mf">2.46</span> <span class="n">ms</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mf">8.42</span> <span class="n">ms</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mf">45.4</span> <span class="n">ms</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ra&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;decl&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;R.A. (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Dec (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Visit </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ccdvisitid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> (MJD </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;midpointtai&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;Visit 126272 (MJD 60043.17665)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../_images/solsys-sims-2021-demo_20_1.png" src="../../_images/solsys-sims-2021-demo_20_1.png" />
+<p>Now grab the same data in ecliptic coordinates:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT</span>
+<span class="s2">        eclipticLambda as lon, eclipticBeta as lat, ccdVisitId, midPointTAI</span>
+<span class="s2">    FROM</span>
+<span class="s2">        diaSources JOIN ssSources USING(diaSourceId)</span>
+<span class="s2">    WHERE</span>
+<span class="s2">        ccdVisitId = 126272</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mi">59</span> <span class="n">ms</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mf">6.12</span> <span class="n">ms</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mf">65.1</span> <span class="n">ms</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mf">25.3</span> <span class="n">s</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\lambda$ (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\beta$ (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Visit </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ccdvisitid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> (MJD </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;midpointtai&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="../../_images/solsys-sims-2021-demo_23_0.png" src="../../_images/solsys-sims-2021-demo_23_0.png" />
+</section>
+<section id="plot-a-night">
+<h3>Plot a night<a class="headerlink" href="#plot-a-night" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT</span>
+<span class="s2">        ssObjectId, ra, decl, ccdVisitId, midPointTai</span>
+<span class="s2">    FROM</span>
+<span class="s2">        diaSources</span>
+<span class="s2">    WHERE</span>
+<span class="s2">        midPointTai BETWEEN 60000-0.5 AND 60000+0.5</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mi">836</span> <span class="n">ms</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mi">148</span> <span class="n">ms</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mi">984</span> <span class="n">ms</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mf">4.36</span> <span class="n">s</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ra&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;decl&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;R.A. (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Dec (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Night MJD 60000&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;Night MJD 60000&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../_images/solsys-sims-2021-demo_26_1.png" src="../../_images/solsys-sims-2021-demo_26_1.png" />
+</section>
+<section id="first-month-of-the-survey">
+<h3>First month of the survey<a class="headerlink" href="#first-month-of-the-survey" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT MIN(midPointTai) from diaSources&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">)[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">t0</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">59853.98564424414</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT</span>
+<span class="s2">        ra, decl</span>
+<span class="s2">    FROM</span>
+<span class="s2">        diaSources</span>
+<span class="s2">    WHERE</span>
+<span class="s2">        midPointTai BETWEEN </span><span class="si">%(start)s</span><span class="s2"> AND </span><span class="si">%(end)s</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">t0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">t0</span><span class="o">+</span><span class="mi">30</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mf">12.6</span> <span class="n">s</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mf">1.97</span> <span class="n">s</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mf">14.6</span> <span class="n">s</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mf">23.1</span> <span class="n">s</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ra&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;decl&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mf">.1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_xaxis</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;R.A. (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Dec (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First month of the survey&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="../../_images/solsys-sims-2021-demo_30_0.png" src="../../_images/solsys-sims-2021-demo_30_0.png" />
+</section>
+<section id="plot-a-phase-curve">
+<h3>Plot a phase curve<a class="headerlink" href="#plot-a-phase-curve" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT</span>
+<span class="s2">        mpcdesignation, ssObjects.ssObjectId, mag, magSigma, filter, midPointTai as mjd, ra, decl, phaseAngle,</span>
+<span class="s2">        topocentricDist, heliocentricDist</span>
+<span class="s2">    FROM</span>
+<span class="s2">        mpcorb</span>
+<span class="s2">        JOIN ssObjects USING (ssobjectid)</span>
+<span class="s2">        JOIN diaSources USING (ssobjectid)</span>
+<span class="s2">        JOIN ssSources USING (diaSourceid)</span>
+<span class="s2">    WHERE</span>
+<span class="s2">        mpcdesignation = &#39;S00001vAa&#39; and filter=&#39;r&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+<span class="c1"># Distance correction</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;cmag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;mag&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;topocentricdist&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;heliocentricdist&quot;</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mpcdesignation</th>
+      <th>ssobjectid</th>
+      <th>mag</th>
+      <th>magsigma</th>
+      <th>filter</th>
+      <th>mjd</th>
+      <th>ra</th>
+      <th>decl</th>
+      <th>phaseangle</th>
+      <th>topocentricdist</th>
+      <th>heliocentricdist</th>
+      <th>cmag</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>S00001vAa</td>
+      <td>8050632269120433289</td>
+      <td>20.652550</td>
+      <td>0.013050</td>
+      <td>r</td>
+      <td>62352.235856</td>
+      <td>338.662138</td>
+      <td>-15.892054</td>
+      <td>14.838730</td>
+      <td>0.595123</td>
+      <td>1.578381</td>
+      <td>20.788458</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>S00001vAa</td>
+      <td>8050632269120433289</td>
+      <td>20.670551</td>
+      <td>0.016261</td>
+      <td>r</td>
+      <td>62352.244968</td>
+      <td>338.657501</td>
+      <td>-15.893365</td>
+      <td>14.830055</td>
+      <td>0.595161</td>
+      <td>1.578451</td>
+      <td>20.806224</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>S00001vAa</td>
+      <td>8050632269120433289</td>
+      <td>20.605118</td>
+      <td>0.010641</td>
+      <td>r</td>
+      <td>62360.313185</td>
+      <td>334.722045</td>
+      <td>-16.968608</td>
+      <td>7.679678</td>
+      <td>0.635753</td>
+      <td>1.639855</td>
+      <td>20.514649</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>S00001vAa</td>
+      <td>8050632269120433289</td>
+      <td>20.660650</td>
+      <td>0.018832</td>
+      <td>r</td>
+      <td>62251.421038</td>
+      <td>332.847465</td>
+      <td>-15.415406</td>
+      <td>96.779530</td>
+      <td>0.302469</td>
+      <td>0.924456</td>
+      <td>23.427812</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>S00001vAa</td>
+      <td>8050632269120433289</td>
+      <td>22.143944</td>
+      <td>0.040766</td>
+      <td>r</td>
+      <td>61286.975565</td>
+      <td>242.153201</td>
+      <td>-24.872374</td>
+      <td>51.970360</td>
+      <td>0.893512</td>
+      <td>1.272925</td>
+      <td>21.864428</td>
+    </tr>
+  </tbody>
+</table>
+</div><p>Now make a plot:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;phaseangle&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cmag&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;magsigma&quot;</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Phase Angle (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Distance corrected mag_r (mag)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Phase curve for </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;mpcdesignation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, r band&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="../../_images/solsys-sims-2021-demo_34_0.png" src="../../_images/solsys-sims-2021-demo_34_0.png" />
+<p>Now grab our (H, G) fit, and overplot it</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ssoId</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ssobjectid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">hg</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT rH, rG12, rHErr, rG12Err, rChi2 FROM ssObjects WHERE ssObjectId=</span><span class="si">%(ssoId)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ssoId</span><span class="o">=</span><span class="n">ssoId</span><span class="p">))</span>
+<span class="n">hg</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>rh</th>
+      <th>rg12</th>
+      <th>rherr</th>
+      <th>rg12err</th>
+      <th>rchi2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>19.9568</td>
+      <td>0.150825</td>
+      <td>0.009669</td>
+      <td>0.004122</td>
+      <td>1.167215</td>
+    </tr>
+  </tbody>
+</table>
+</div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;phaseangle&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cmag&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;magsigma&quot;</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Phase Angle (deg)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Distance corrected mag_r (mag)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Phase curve for </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;mpcdesignation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, r band&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sbpy.photometry</span> <span class="kn">import</span> <span class="n">HG</span>
+<span class="n">H</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">sigmaH</span><span class="p">,</span> <span class="n">sigmaG</span><span class="p">,</span> <span class="n">chi2dof</span> <span class="o">=</span> <span class="n">hg</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">_ph</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;phaseangle&quot;</span><span class="p">])</span>
+<span class="n">_mag</span> <span class="o">=</span> <span class="n">HG</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">_ph</span><span class="p">),</span> <span class="n">H</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_ph</span><span class="p">,</span> <span class="n">_mag</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H=</span><span class="si">{</span><span class="n">H</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">±</span><span class="si">{</span><span class="n">sigmaH</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2">, G=</span><span class="si">{</span><span class="n">G</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">±</span><span class="si">{</span><span class="n">sigmaG</span><span class="si">:</span><span class="s2">.3</span><span class="si">}</span><span class="s2">, χ2/dof=</span><span class="si">{</span><span class="n">chi2dof</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>H=19.96±0.00967, G=0.15±0.00412, χ2/dof=1.167
+</pre></div>
+</div>
+<img alt="../../_images/solsys-sims-2021-demo_37_1.png" src="../../_images/solsys-sims-2021-demo_37_1.png" />
+</section>
+<section id="look-at-the-input-population">
+<h3>Look at the input population<a class="headerlink" href="#look-at-the-input-population" title="Permalink to this heading">¶</a></h3>
+<p>This is just S3M, so it should correspond to the plots from the Grav et
+al. 2011 paper.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT</span>
+<span class="s2">        FLOOR(mpcH*10)/10 AS binH, count(*)</span>
+<span class="s2">    FROM</span>
+<span class="s2">        mpcorb</span>
+<span class="s2">    GROUP BY binH</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;binh&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;H (mag)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Objects in bin&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;Objects in bin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../_images/solsys-sims-2021-demo_40_1.png" src="../../_images/solsys-sims-2021-demo_40_1.png" />
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">LSST SSSC Technical Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">LSST Solar System Simulations, June 2021</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sssource-plot-a-comet-lightcurve/sssource-plot-a-comet-lightcurve.html">Plot a comet lightcurve from <code class="docutils literal notranslate"><span class="pre">sssource</span></code></a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../../index.html" title="previous chapter">Welcome to LSST SSSC Technical Documentation!</a></li>
+      <li>Next: <a href="../sssource-plot-a-comet-lightcurve/sssource-plot-a-comet-lightcurve.html" title="next chapter">Plot a comet lightcurve from <code class="docutils literal notranslate"><span class="pre">sssource</span></code></a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, LSST SSSC.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/notebooks/solsys-sims-2021-demo/solsys-sims-2021-demo.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
