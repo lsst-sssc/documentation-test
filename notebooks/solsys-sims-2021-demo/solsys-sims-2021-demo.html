@@ -1,19 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>LSST Solar System Simulations, June 2021 &#8212; LSST SSSC Technical Documentation  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Plot a comet lightcurve from sssource" href="../sssource-plot-a-comet-lightcurve/sssource-plot-a-comet-lightcurve.html" />
@@ -21,8 +18,9 @@
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -35,14 +33,14 @@
           <div class="body" role="main">
             
   <section id="lsst-solar-system-simulations-june-2021">
-<h1>LSST Solar System Simulations, June 2021<a class="headerlink" href="#lsst-solar-system-simulations-june-2021" title="Permalink to this heading">¶</a></h1>
+<h1>LSST Solar System Simulations, June 2021<a class="headerlink" href="#lsst-solar-system-simulations-june-2021" title="Link to this heading">¶</a></h1>
 <p>Juric, Eggl, Jones, Fedorets, Cornwall, Berres, Chernyavskaya, Moeyens,
 Schwamb, et many many al.</p>
 <p>This notebook illustrates what is available in the June 2021 version of
 the simulated LSST Solar System dataset. Use it as a starting point for
 your own experiments.</p>
 <section id="getting-this-notebook">
-<h2>Getting this notebook<a class="headerlink" href="#getting-this-notebook" title="Permalink to this heading">¶</a></h2>
+<h2>Getting this notebook<a class="headerlink" href="#getting-this-notebook" title="Link to this heading">¶</a></h2>
 <p>This notebook is available from
 <a class="reference external" href="https://github.com/lsst-sssc/lsst-simulation">https://github.com/lsst-sssc/lsst-simulation</a>. Open a terminal and clone
 it into your home directory to run it:</p>
@@ -51,11 +49,11 @@ it into your home directory to run it:</p>
 </div>
 </section>
 <section id="connecting-and-inspecting-available-tables">
-<h2>Connecting and inspecting available tables<a class="headerlink" href="#connecting-and-inspecting-available-tables" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">psycopg2</span> <span class="k">as</span> <span class="nn">pg</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<h2>Connecting and inspecting available tables<a class="headerlink" href="#connecting-and-inspecting-available-tables" title="Link to this heading">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">psycopg2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pwd</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/home/shared/sssc-db-pass.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -833,7 +831,7 @@ each table:</p>
 </table>
 <p>5 rows × 27 columns</p>
 </div><section id="plot-a-visit">
-<h3>Plot a visit<a class="headerlink" href="#plot-a-visit" title="Permalink to this heading">¶</a></h3>
+<h3>Plot a visit<a class="headerlink" href="#plot-a-visit" title="Link to this heading">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    SELECT</span>
@@ -890,7 +888,7 @@ each table:</p>
 <img alt="../../_images/solsys-sims-2021-demo_23_0.png" src="../../_images/solsys-sims-2021-demo_23_0.png" />
 </section>
 <section id="plot-a-night">
-<h3>Plot a night<a class="headerlink" href="#plot-a-night" title="Permalink to this heading">¶</a></h3>
+<h3>Plot a night<a class="headerlink" href="#plot-a-night" title="Link to this heading">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    SELECT</span>
@@ -923,7 +921,7 @@ each table:</p>
 <img alt="../../_images/solsys-sims-2021-demo_26_1.png" src="../../_images/solsys-sims-2021-demo_26_1.png" />
 </section>
 <section id="first-month-of-the-survey">
-<h3>First month of the survey<a class="headerlink" href="#first-month-of-the-survey" title="Permalink to this heading">¶</a></h3>
+<h3>First month of the survey<a class="headerlink" href="#first-month-of-the-survey" title="Link to this heading">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;SELECT MIN(midPointTai) from diaSources&quot;</span><span class="p">,</span> <span class="n">con</span><span class="p">)[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">t0</span>
 </pre></div>
@@ -938,7 +936,7 @@ each table:</p>
 <span class="s2">    FROM</span>
 <span class="s2">        diaSources</span>
 <span class="s2">    WHERE</span>
-<span class="s2">        midPointTai BETWEEN </span><span class="si">%(start)s</span><span class="s2"> AND </span><span class="si">%(end)s</span><span class="s2"></span>
+<span class="s2">        midPointTai BETWEEN </span><span class="si">%(start)s</span><span class="s2"> AND </span><span class="si">%(end)s</span>
 <span class="s2">&quot;&quot;&quot;</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">t0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">t0</span><span class="o">+</span><span class="mi">30</span><span class="p">))</span>
 </pre></div>
@@ -960,7 +958,7 @@ each table:</p>
 <img alt="../../_images/solsys-sims-2021-demo_30_0.png" src="../../_images/solsys-sims-2021-demo_30_0.png" />
 </section>
 <section id="plot-a-phase-curve">
-<h3>Plot a phase curve<a class="headerlink" href="#plot-a-phase-curve" title="Permalink to this heading">¶</a></h3>
+<h3>Plot a phase curve<a class="headerlink" href="#plot-a-phase-curve" title="Link to this heading">¶</a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    SELECT</span>
 <span class="s2">        mpcdesignation, ssObjects.ssObjectId, mag, magSigma, filter, midPointTai as mjd, ra, decl, phaseAngle,</span>
@@ -1148,7 +1146,7 @@ each table:</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Distance corrected mag_r (mag)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Phase curve for </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;mpcdesignation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, r band&#39;</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">sbpy.photometry</span> <span class="kn">import</span> <span class="n">HG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sbpy.photometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">HG</span>
 <span class="n">H</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">sigmaH</span><span class="p">,</span> <span class="n">sigmaG</span><span class="p">,</span> <span class="n">chi2dof</span> <span class="o">=</span> <span class="n">hg</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">_ph</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;phaseangle&quot;</span><span class="p">])</span>
 <span class="n">_mag</span> <span class="o">=</span> <span class="n">HG</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">_ph</span><span class="p">),</span> <span class="n">H</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
@@ -1162,7 +1160,7 @@ each table:</p>
 <img alt="../../_images/solsys-sims-2021-demo_37_1.png" src="../../_images/solsys-sims-2021-demo_37_1.png" />
 </section>
 <section id="look-at-the-input-population">
-<h3>Look at the input population<a class="headerlink" href="#look-at-the-input-population" title="Permalink to this heading">¶</a></h3>
+<h3>Look at the input population<a class="headerlink" href="#look-at-the-input-population" title="Link to this heading">¶</a></h3>
 <p>This is just S3M, so it should correspond to the plots from the Grav et
 al. 2011 paper.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
@@ -1192,7 +1190,7 @@ al. 2011 paper.</p>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h1 class="logo"><a href="../../index.html">LSST SSSC Technical Documentation</a></h1>
 
@@ -1205,6 +1203,7 @@ al. 2011 paper.</p>
 
 <h3>Navigation</h3>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dp0.2-ssos/dp0.2-ssos.html">Solar system objects in DP0.2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../simulated_asteroid_lightcurves/simulated_asteroid_lightcurves.html">Adding lightcurve effects to LSST Solar System Simulations</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">LSST Solar System Simulations, June 2021</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sssource-plot-a-comet-lightcurve/sssource-plot-a-comet-lightcurve.html">Plot a comet lightcurve from <code class="docutils literal notranslate"><span class="pre">sssource</span></code></a></li>
@@ -1219,7 +1218,7 @@ al. 2011 paper.</p>
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -1227,7 +1226,7 @@ al. 2011 paper.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 
 
@@ -1242,11 +1241,11 @@ al. 2011 paper.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2022, LSST SSSC.
+      &#169;2022, LSST SSSC.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="../../_sources/notebooks/solsys-sims-2021-demo/solsys-sims-2021-demo.rst.txt"

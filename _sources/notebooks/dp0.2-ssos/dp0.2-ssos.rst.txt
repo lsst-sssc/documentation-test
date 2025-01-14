@@ -1,0 +1,53 @@
+Solar system objects in DP0.2
+=============================
+
+`LSST’s Data Preview v0.2 <https://dp0-2.lsst.io/>`__ is simulation of
+300 deg2 of sky, observed with an LSST-like camera and cadence. Solar
+system objects are not included in the simulated DP0.2 data, but one can
+still search the DP0.2 metadata for coverage of a their ephemerides.
+This document serves as a resource to share information on those
+targets.
+
+sbsearch results (lead: Mike Kelley)
+------------------------------------
+
+`sbsearch <https://github.com/Small-Bodies-Node/sbsearch>`__ is a
+library that is designed to search for comets and asteroids in
+wide-field time-domain data sets. `v3 of
+sbsearch <https://github.com/Small-Bodies-Node/sbsearch/tree/v3>`__ is
+in development (as of Jan 2025), but has been successfully used to find
+solar system objects in DP0.2 data. The following figure serves as an
+example of such a search for comet C/2022 R6 (PanSTARRS).
+
+.. raw:: html
+
+   <figure>
+
+.. raw:: html
+
+   <figcaption>
+
+C/2022 R6 (PanSTARRS) ephemeris and the DP0.2 images that include it.
+
+.. raw:: html
+
+   </figcaption>
+
+.. raw:: html
+
+   </figure>
+
+The following solar system objects have been “observed” by the DP0.2
+data set:
+
+================================ ======================
+Object                           Number of observations
+================================ ======================
+(65803) Didymos                  4
+2022 SC19                        26
+C/2022 R6 (PanSTARRS)            63
+C/2019 Q3 (PanSTARRS)            12
+C/2022 O1 (ATLAS)                30
+C/2023 V4 (Camarasa-Duszanowicz) 26
+C/2023 V5 (Leonard)              31
+================================ ======================
