@@ -51,3 +51,6 @@ C/2022 O1 (ATLAS)                30
 C/2023 V4 (Camarasa-Duszanowicz) 26
 C/2023 V5 (Leonard)              31
 ================================ ======================
+
+See `dp0.2-found.txt <dp0.2-found.txt>`__ for a list of all found
+observations.
